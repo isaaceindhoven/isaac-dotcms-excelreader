@@ -17,8 +17,8 @@ import java.util.Map;
  *
  * @param <T>
  */
-public interface ItemHandler<T> {
-	public T get(String key);
-	public boolean isChanged(String key);
-	public Map<String,T> getInitialCache();
+public interface ItemHandler<K, V> {
+	public V get(K key);
+	public boolean isChanged(K key);
+	public Map<K,V> getInitialCache();
 }

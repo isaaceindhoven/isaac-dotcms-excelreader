@@ -15,9 +15,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.isaac.dotcms.excelreader.util.ExcelReaderCacheGroupHandler;
+import javax.servlet.http.HttpServletRequest;
 
+import nl.isaac.dotcms.excelreader.shared.RequestUtil;
+import nl.isaac.dotcms.excelreader.util.ExcelReaderCacheGroupHandler;
+import nl.isaac.dotcms.excelreader.util.ExcelReaderDotCMSFileKey;
+import nl.isaac.dotcms.excelreader.util.ExcelReaderFileKey;
+
+import org.apache.velocity.tools.view.context.ViewContext;
 import org.apache.velocity.tools.view.tools.ViewTool;
+
+import com.dotmarketing.beans.Host;
+import com.dotmarketing.business.APILocator;
+import com.dotmarketing.business.web.WebAPILocator;
+import com.dotmarketing.exception.DotDataException;
+import com.dotmarketing.exception.DotSecurityException;
+import com.liferay.portal.PortalException;
+import com.liferay.portal.SystemException;
 /**
  * A ViewTool to get the information out of Excel files
  * 
@@ -25,16 +39,22 @@ import org.apache.velocity.tools.view.tools.ViewTool;
  *
  */
 public class ExcelReaderTool implements ViewTool {
+	private HttpServletRequest request;
 	
 	public void init(Object arg0) {
-		
+		ViewContext context = (ViewContext) arg0;
+		this.request = context.getRequest();
 	}
 	
 	/**
 	 * Get the information of an Excel file as a list of maps.
 	 */
-	public static List<Map<String, Object>> readExcel(String file) {
-		return ExcelReaderCacheGroupHandler.getInstance().get(file);
+	public List<Map<String, Object>> readExcel(String file) {
+		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderFileKey(file));
+	}
+	
+	public List<Map<String, Object>> readExcelFromDotCMS(String url) {
+		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderDotCMSFileKey(url, getCurrentHost(), isLive()));
 	}
 	
 	/**
@@ -81,4 +101,23 @@ public class ExcelReaderTool implements ViewTool {
 			
 		}
 	}
+	
+	public Host getCurrentHost() {
+		try {
+			return WebAPILocator.getHostWebAPI().getCurrentHost(request);
+		} catch (SystemException e) {
+			throw new RuntimeException("Error while getting host", e);
+		} catch (PortalException e) {
+			throw new RuntimeException("Error while getting host", e);
+		} catch (DotDataException e) {
+			throw new RuntimeException("Error while getting host", e);
+		} catch (DotSecurityException e) {
+			throw new RuntimeException("Error while getting host", e);
+		}
+	}
+	
+	public boolean isLive() {
+		return RequestUtil.isLiveMode(request);
+	}
+	
 }

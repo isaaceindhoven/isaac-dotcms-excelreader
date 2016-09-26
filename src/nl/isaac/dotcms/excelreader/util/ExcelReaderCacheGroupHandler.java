@@ -18,7 +18,7 @@ import nl.isaac.dotcms.excelreader.shared.CacheGroupHandler;
  * @author xander
  *
  */
-public class ExcelReaderCacheGroupHandler extends CacheGroupHandler<List<Map<String, Object>>> {
+public class ExcelReaderCacheGroupHandler extends CacheGroupHandler<ExcelReaderFileKey, List<Map<String, Object>>> {
 	private static ExcelReaderCacheGroupHandler cache;
 	
 	private ExcelReaderCacheGroupHandler() {

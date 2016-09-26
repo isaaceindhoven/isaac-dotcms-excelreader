@@ -8,13 +8,19 @@ package nl.isaac.dotcms.excelreader.util;
 * @copyright Copyright (c) 2011 ISAAC Software Solutions B.V. (http://www.isaac.nl)
 */
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import com.dotmarketing.business.APILocator;
+import com.dotmarketing.portlets.files.factories.FileFactory;
 import com.dotmarketing.util.Logger;
 
 import nl.isaac.dotcms.excelreader.shared.ItemHandler;
@@ -25,17 +31,25 @@ import nl.isaac.dotcms.excelreader.shared.ItemHandler;
  * @author xander
  */
 
-public class ExcelReaderItemHandler implements ItemHandler<List<Map<String, Object>>> {
-	private Map<String, Long> lastModDates = new HashMap<String, Long>();
+public class ExcelReaderItemHandler implements ItemHandler<ExcelReaderFileKey, List<Map<String, Object>>> {
+	private Map<ExcelReaderFileKey, Long> lastModDates = new HashMap<ExcelReaderFileKey, Long>();
 	
 	/**
 	 * @return whether the key has changed since it was last requested 
 	 */
-	public boolean isChanged(String key) {
+	public boolean isChanged(ExcelReaderFileKey key) {
 		try {
 			if(lastModDates.containsKey(key)) {
-				File file = new File(key);
-				return file == null || !lastModDates.get(key).equals(file.lastModified()); 
+				if(key instanceof ExcelReaderDotCMSFileKey) {
+					//get from dotCMS
+					ExcelReaderDotCMSFileKey dotcmsKey = (ExcelReaderDotCMSFileKey)key;
+					com.dotmarketing.portlets.files.model.File file = FileFactory.getFileByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
+					return file == null || !lastModDates.get(key).equals(file.getModDate().getTime());
+				} else {
+					//get from the file system
+					File file = new File(key.getPath());
+					return file == null || !lastModDates.get(key).equals(file.lastModified()); 
+				}
 			} else {
 				return true;
 			}
@@ -48,26 +62,55 @@ public class ExcelReaderItemHandler implements ItemHandler<List<Map<String, Obje
 	/**
 	 * @return an excel sheet as a List of Maps. The key is the location of the file (on the harddisk)
 	 */
-	public List<Map<String, Object>> get(String key) {
+	public List<Map<String, Object>> get(ExcelReaderFileKey key) {
 		Calendar start = Calendar.getInstance();
+		InputStream is = null;
+		File file = null;
+		com.dotmarketing.portlets.files.model.File dotcmsFile = null;
 		try {
-			File file = new File(key);
-			FileInputStream fis = new FileInputStream(file);
+			if(key instanceof ExcelReaderDotCMSFileKey) {
+				//get from dotCMS
+				ExcelReaderDotCMSFileKey dotcmsKey = (ExcelReaderDotCMSFileKey)key;
+				dotcmsFile = FileFactory.getFileByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
+				is = new ByteArrayInputStream(FileFactory.getFileData(dotcmsFile));
+			} else {
+				//get from the file system
+				file = new File(key.getPath());
+				is = new FileInputStream(file);
+			}
+			
 			DefaultRowStrategy strategy = new DefaultRowStrategy();
 			ExcelUtilStatus status = new ExcelUtilStatus();
-			ExcelUtil.executeStrategyOnExcelSheet(fis, strategy, status);
+			ExcelUtil.executeStrategyOnExcelSheet(is, strategy, status);
 			Logger.info(this.getClass(), "Reading of excel '" + key + "' took " + (Calendar.getInstance().getTimeInMillis() - start.getTimeInMillis()) + "ms");
-			lastModDates.put(key, file.lastModified());
+			
+			if(key instanceof ExcelReaderDotCMSFileKey) {
+				lastModDates.put(key, dotcmsFile.getModDate().getTime());
+			} else {
+				lastModDates.put(key, file.lastModified());
+			}
+			for(Entry<Integer, Exception> entry: status.getMapWithRowNumbersAndExceptions().entrySet()) {
+				Logger.info(this.getClass(), "Row " + entry.getKey() + " has error: " + entry.getValue().getMessage());
+			}
+			Logger.info(this.getClass(), "Successfully read " + status.getNumberOfImportedRows() + " row and skipped " + status.getNumberOfFailedRows());
 			return strategy.getData(); 
 		} catch (Throwable t) {
 			Logger.error(this.getClass(), "Error while reading excel", t);
 			return null;
+		} finally {
+			if(is != null) {
+				try {
+					is.close();
+				} catch (IOException e) {
+					Logger.warn(this.getClass(), "Unable to close file connection to " + key.getPath());
+				}
+			}
 		}
 	}
 	
-	
-	public Map<String, List<Map<String, Object>>> getInitialCache() {
-		return new HashMap<String, List<Map<String, Object>>>();
+	@Override
+	public Map<ExcelReaderFileKey, List<Map<String, Object>>> getInitialCache() {
+		return new HashMap<ExcelReaderFileKey, List<Map<String, Object>>>();
 	}
 
 }

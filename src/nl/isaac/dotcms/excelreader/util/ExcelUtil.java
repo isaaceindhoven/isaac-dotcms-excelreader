@@ -8,8 +8,11 @@ package nl.isaac.dotcms.excelreader.util;
 * @copyright Copyright (c) 2011 ISAAC Software Solutions B.V. (http://www.isaac.nl)
 */
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,13 +20,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.supercsv.io.CsvMapReader;
+import org.supercsv.io.ICsvMapReader;
+import org.supercsv.prefs.CsvPreference;
 
 import com.dotmarketing.util.Logger;
 
@@ -39,10 +44,14 @@ public class ExcelUtil {
 	 * @return an ExcelUtilStatus containing info about the executed rows
 	 * @throws IOException when there's a problem with the excel sheet file
 	 */
-	public static void executeStrategyOnExcelSheet(FileInputStream fis, RowStrategy rowStrategy, ExcelUtilStatus status) throws IOException {
+	public static void executeStrategyOnExcelSheet(InputStream is, RowStrategy rowStrategy, ExcelUtilStatus status) throws IOException {
+		//The bufferedInputStream is used, because the WorkbookFactory reads first 8 bytes of data before it go's to the exception.
+		//Without this inputStream the first 8 characters of the first columnname will be removed.
+		BufferedInputStream bis = new BufferedInputStream(is);
+		bis.mark(32);
 		Map<String, Integer> headerMapping = new HashMap<String, Integer>();
 		try {
-			Workbook workbook = WorkbookFactory.create(fis);
+			Workbook workbook = WorkbookFactory.create(bis);
 			Sheet sheet = workbook.getSheetAt(0);
 			status.setTotalNumberOfRows(sheet.getLastRowNum());
 			Iterator<Row> rowIterator = sheet.rowIterator();
@@ -61,10 +70,31 @@ public class ExcelUtil {
 					}
 				}
 			}
-		} catch(InvalidFormatException e) {
-			Logger.error(ExcelUtil.class, "Can't read Excel file", e);
+		} catch(Exception e) {
+			bis.reset();
+			//TODO: catch the exceptions from the workbookfactory: IllegalArgumentException + IllegalFormatException
+			Logger.warn(ExcelUtil.class, "Can't read Excel file, trying csv format: " + e.getMessage());
+			ICsvMapReader inFile = new CsvMapReader(new InputStreamReader(bis), CsvPreference.EXCEL_PREFERENCE);
+			try {
+				final String[] header = inFile.getCSVHeader(true);
+				Map<String, String> stringMap;
+				while((stringMap = inFile.read(header)) != null) {
+					Map<String, Object> row = getStringMapAsMap(stringMap); 
+					try {
+						rowStrategy.executeRow(row);
+						status.addSuccesfulRow();
+					} catch (Exception e2) {
+						status.addFailedRowWithException(e2);
+					}
+				}
+			} catch (IOException ioe) {
+				Logger.error(ExcelUtil.class, "Can't read excel file as CSV", ioe);
+				Logger.error(ExcelUtil.class, "Original WorkbookFactory excel reader error:", e);
+			} finally {      
+				inFile.close();
+			}			
 		} finally {
-			fis.close();
+			bis.close();
 		}
 		
 		status.setFinished();
@@ -121,6 +151,17 @@ public class ExcelUtil {
 		}
 		
 		return rowMap;
+	}
+	
+	/**
+	 * @return convert a Map<String, String> to a Map<String, Object> (for the CSV reader)  
+	 */
+	private static Map<String, Object> getStringMapAsMap(Map<String, String> stringMap) {
+		Map<String, Object> objectMap = new HashMap<String, Object>();
+		for(Entry<String, String> entry: stringMap.entrySet()) {
+			objectMap.put(entry.getKey(), entry.getValue());
+		}
+		return objectMap;
 	}
 	
 	/**

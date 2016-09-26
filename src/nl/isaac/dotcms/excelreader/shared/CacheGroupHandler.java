@@ -22,58 +22,58 @@ import com.dotmarketing.util.Logger;
  *
  * @param <T>
  */
-public class CacheGroupHandler<T> {
+public class CacheGroupHandler<K, V> {
 	private String groupName;
-	protected ItemHandler<T> itemHandler;
+	protected ItemHandler<K, V> itemHandler;
 	
-	public CacheGroupHandler(String groupName, ItemHandler<T> itemHandler) {
+	public CacheGroupHandler(String groupName, ItemHandler<K, V> itemHandler) {
 		this.groupName = groupName;
 		this.itemHandler = itemHandler;
 	}
 	
-	public T get(String key) {
+	public V get(K key) {
 		DotCacheAdministrator cache = CacheLocator.getCacheAdministrator();
 		Object o = null;
 		
 		if(!itemHandler.isChanged(key)) {
 			try {
-				o = cache.get(key, groupName);
+				o = cache.get(key.toString(), groupName);
 			} catch (DotCacheException e) {
 				Logger.info(this.getClass(), String.format("DotCacheException for Group '%s', key '%s', message: %s", groupName, key, e.getMessage()));
 			}
 		}
 		
 		if(o == null) {
-			T t = itemHandler.get(key);
+			V t = itemHandler.get(key);
 			put(key, t);
 			return t;
 		} else {
-			return (T)o;
+			return (V)o;
 		}
 	}
 	
-	public void put(String key, T t) {
+	public void put(K key, V t) {
 		DotCacheAdministrator cache = CacheLocator.getCacheAdministrator();
-		cache.put(key, t, groupName);
+		cache.put(key.toString(), t, groupName);
 	}
 	
 	/**
 	 * Updates the given key by calling the itemhandler's get method
 	 */
-	public void updateWithItemHandler(String key) {
+	public void updateWithItemHandler(K key) {
 		remove(key);
 		put(key, itemHandler.get(key));
 	}
 	
-	public void remove(String key) {
+	public void remove(K key) {
 		DotCacheAdministrator cache = CacheLocator.getCacheAdministrator();
-		cache.remove(key, groupName);
+		cache.remove(key.toString(), groupName);
 	}
 	
 	public void fillInitialCache() {
 		removeAll();
-		Map<String, T> initialCache = itemHandler.getInitialCache();
-		for(Entry<String, T> entry: initialCache.entrySet()) {
+		Map<K, V> initialCache = itemHandler.getInitialCache();
+		for(Entry<K, V> entry: initialCache.entrySet()) {
 			put(entry.getKey(), entry.getValue());
 		}
 	}

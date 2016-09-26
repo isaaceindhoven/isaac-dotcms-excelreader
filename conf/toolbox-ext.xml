@@ -1,6 +1,6 @@
 	<tool>
 		<key>excel</key>
-		<scope>application</scope>
+		<scope>request</scope>
 		<class>nl.isaac.dotcms.excelreader.viewtool.ExcelReaderTool</class>
 	</tool>
 	
