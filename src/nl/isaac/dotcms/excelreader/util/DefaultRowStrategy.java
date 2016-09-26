@@ -21,9 +21,23 @@ import nl.isaac.dotcms.excelreader.util.ExcelUtil.RowStrategy;
  */
 public class DefaultRowStrategy implements RowStrategy {
 	private List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+	private boolean skipEmptyLines = false;
+	public DefaultRowStrategy() {}
+	public DefaultRowStrategy(boolean skipEmptyLines) {
+		this.skipEmptyLines = skipEmptyLines;
+	}
 	
 	public void executeRow(Map<String, Object> row) throws Exception {
-		data.add(row);		
+		if (skipEmptyLines) {
+			for (Map.Entry<String, Object> value : row.entrySet()) {
+				if (value.getValue() != null && (!(value.getValue() instanceof String) || ((String) value.getValue()).length() > 0)) {
+					data.add(row);
+					return;
+				}
+			}
+		} else {
+			data.add(row);
+		}
 	}
 	
 	public List<Map<String, Object>> getData() {

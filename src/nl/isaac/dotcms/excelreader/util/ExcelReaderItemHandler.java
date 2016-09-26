@@ -8,7 +8,6 @@ package nl.isaac.dotcms.excelreader.util;
 * @copyright Copyright (c) 2011 ISAAC Software Solutions B.V. (http://www.isaac.nl)
 */
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,11 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.dotmarketing.business.APILocator;
-import com.dotmarketing.portlets.files.factories.FileFactory;
-import com.dotmarketing.util.Logger;
-
+import nl.isaac.dotcms.excelreader.shared.FileTools;
 import nl.isaac.dotcms.excelreader.shared.ItemHandler;
+
+import com.dotmarketing.portlets.fileassets.business.FileAsset;
+import com.dotmarketing.util.Logger;
 
 /**
  * A class that handles the importing of a single Excel file. Using the CacheGroupHandler/ItemHandler classes, the result is stored in the dotCMS cache.
@@ -43,7 +42,7 @@ public class ExcelReaderItemHandler implements ItemHandler<ExcelReaderFileKey, L
 				if(key instanceof ExcelReaderDotCMSFileKey) {
 					//get from dotCMS
 					ExcelReaderDotCMSFileKey dotcmsKey = (ExcelReaderDotCMSFileKey)key;
-					com.dotmarketing.portlets.files.model.File file = FileFactory.getFileByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
+					FileAsset file = FileTools.getFileAssetByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
 					return file == null || !lastModDates.get(key).equals(file.getModDate().getTime());
 				} else {
 					//get from the file system
@@ -66,20 +65,20 @@ public class ExcelReaderItemHandler implements ItemHandler<ExcelReaderFileKey, L
 		Calendar start = Calendar.getInstance();
 		InputStream is = null;
 		File file = null;
-		com.dotmarketing.portlets.files.model.File dotcmsFile = null;
+		FileAsset dotcmsFile = null;
 		try {
 			if(key instanceof ExcelReaderDotCMSFileKey) {
 				//get from dotCMS
 				ExcelReaderDotCMSFileKey dotcmsKey = (ExcelReaderDotCMSFileKey)key;
-				dotcmsFile = FileFactory.getFileByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
-				is = new ByteArrayInputStream(FileFactory.getFileData(dotcmsFile));
+				dotcmsFile = FileTools.getFileAssetByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
+				is = dotcmsFile.getFileInputStream();
 			} else {
 				//get from the file system
 				file = new File(key.getPath());
 				is = new FileInputStream(file);
 			}
 			
-			DefaultRowStrategy strategy = new DefaultRowStrategy();
+			DefaultRowStrategy strategy = new DefaultRowStrategy(key.isSkipEmptyLines());
 			ExcelUtilStatus status = new ExcelUtilStatus();
 			ExcelUtil.executeStrategyOnExcelSheet(is, strategy, status);
 			Logger.info(this.getClass(), "Reading of excel '" + key + "' took " + (Calendar.getInstance().getTimeInMillis() - start.getTimeInMillis()) + "ms");

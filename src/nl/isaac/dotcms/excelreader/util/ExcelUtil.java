@@ -9,7 +9,6 @@ package nl.isaac.dotcms.excelreader.util;
 */
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

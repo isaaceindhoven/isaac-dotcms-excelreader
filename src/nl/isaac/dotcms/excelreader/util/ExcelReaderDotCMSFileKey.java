@@ -5,9 +5,9 @@ import com.dotmarketing.beans.Host;
 public class ExcelReaderDotCMSFileKey extends ExcelReaderFileKey {
 	private final Host host;
 	private final boolean live;
-	
-	public ExcelReaderDotCMSFileKey(String path, Host host, boolean live) {
-		super(path);
+
+	public ExcelReaderDotCMSFileKey(String path, Host host, boolean live, boolean skipEmptyLines) {
+		super(path, skipEmptyLines);
 		this.host = host;
 		this.live = live;
 	}
@@ -15,7 +15,7 @@ public class ExcelReaderDotCMSFileKey extends ExcelReaderFileKey {
 	public Host getHost() {
 		return host;
 	}
-	
+
 	public boolean isLive() {
 		return live;
 	}

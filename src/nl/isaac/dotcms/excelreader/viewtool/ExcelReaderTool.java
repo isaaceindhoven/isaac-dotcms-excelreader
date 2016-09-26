@@ -26,7 +26,6 @@ import org.apache.velocity.tools.view.context.ViewContext;
 import org.apache.velocity.tools.view.tools.ViewTool;
 
 import com.dotmarketing.beans.Host;
-import com.dotmarketing.business.APILocator;
 import com.dotmarketing.business.web.WebAPILocator;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.exception.DotSecurityException;
@@ -49,12 +48,18 @@ public class ExcelReaderTool implements ViewTool {
 	/**
 	 * Get the information of an Excel file as a list of maps.
 	 */
+	public List<Map<String, Object>> readExcel(String file, boolean skipEmptyLines) {
+		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderFileKey(file, skipEmptyLines));
+	}
 	public List<Map<String, Object>> readExcel(String file) {
-		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderFileKey(file));
+		return readExcel(file, false);
 	}
 	
 	public List<Map<String, Object>> readExcelFromDotCMS(String url) {
-		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderDotCMSFileKey(url, getCurrentHost(), isLive()));
+		return readExcelFromDotCMS(url, false);
+	}
+	public List<Map<String, Object>> readExcelFromDotCMS(String url, boolean skipEmptyLines) {
+		return ExcelReaderCacheGroupHandler.getInstance().get(new ExcelReaderDotCMSFileKey(url, getCurrentHost(), isLive(), skipEmptyLines));
 	}
 	
 	/**
