@@ -1,3 +1,0 @@
-<project name="Excel Reader" default="build">	
-	<import file="../common.xml"/>	
-</project>

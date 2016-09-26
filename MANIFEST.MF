@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Deploy-Class: 
-Plugin-Name: Excel Reader
-Plugin-Version: 1.0
-Author: Xander

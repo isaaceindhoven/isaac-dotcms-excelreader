@@ -1,0 +1,162 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>nl.isaac.dotcms.plugin.excelreader</groupId>
+	<artifactId>isaac-dotcms-excelreader</artifactId>
+	<version>3.2.1</version>
+	<packaging>bundle</packaging>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<organization>
+		<name>ISAAC Software Solutions</name>
+		<url>http://www.isaac.nl</url>
+	</organization>
+
+	<repositories>
+		<repository>
+			<id>dotcms</id>
+			<name>dotcms Maven Repository</name>
+			<url>http://repo.dotcms.com/artifactory/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>3.2.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+						<Bundle-Name>${project.artifactId}</Bundle-Name>
+						<Bundle-Version>${project.version}</Bundle-Version>
+						<Bundle-Activator>nl.isaac.dotcms.excelreader.osgi.Activator</Bundle-Activator>
+						<Import-Package> </Import-Package>
+						<DynamicImport-Package>*</DynamicImport-Package>
+						<Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
+
+						<Data-Files>conf,ext</Data-Files>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.dotcms</groupId>
+			<artifactId>dotcms</artifactId>
+			<version>3.2.4</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dotcms.lib</groupId>
+			<artifactId>dot.commons-io</artifactId>
+			<version>2.0.1_1</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<version>1.8.6</version>
+			<artifactId>quartz</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.dotcms.lib</groupId>
+		    <artifactId>dot.felix</artifactId>
+		    <version>4.2.1_1</version>
+		    <scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>3.1.0.RELEASE</version>
+			<exclusions>
+			  	<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
+		    <scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.dotcms.lib</groupId>
+			<artifactId>dot.org.apache.felix.http.bundle</artifactId>
+			<version>2.2.0_1</version>
+			<scope>provided</scope>
+		</dependency>		
+		
+		<dependency>
+		  	<groupId>javax.servlet</groupId>
+		  	<artifactId>javax.servlet-api</artifactId>
+		  	<version>3.0.1</version>
+		  	<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+      		<groupId>com.dotcms.lib</groupId>
+      		<artifactId>dot.commons-lang</artifactId>
+      		<version>2.4_1</version>
+      		<scope>provided</scope>
+    	</dependency>
+		
+		<dependency>
+      		<groupId>com.dotcms.lib</groupId>
+      		<artifactId>dot.tika-app</artifactId>
+      		<version>1.3_1</version>
+      		<scope>provided</scope>
+    	</dependency>
+		
+		<dependency>
+      		<groupId>com.dotcms.lib</groupId>
+      		<artifactId>dot.portlet</artifactId>
+      		<version>1.0_1</version>
+      		<scope>provided</scope>
+    	</dependency>
+		
+		<dependency>
+      		<groupId>com.dotcms.lib</groupId>
+      		<artifactId>dot.jettison</artifactId>
+      		<version>1.1_1</version>
+      		<scope>provided</scope>
+    	</dependency>
+
+		<dependency>
+		    <groupId>net.sf.supercsv</groupId>
+		    <artifactId>super-csv</artifactId>
+		    <version>2.3.1</version>
+		</dependency>		
+
+	</dependencies>
+</project>

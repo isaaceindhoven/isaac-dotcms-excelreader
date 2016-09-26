@@ -19,16 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.ICsvMapReader;
 import org.supercsv.prefs.CsvPreference;
 
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.Cell;
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.DateUtil;
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.Row;
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.Sheet;
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.Workbook;
+import com.dotcms.repackage.org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.dotmarketing.util.Logger;
 
 public class ExcelUtil {
@@ -38,7 +38,7 @@ public class ExcelUtil {
 	 * all the other rows are parsed using the given RowStrategy. All thrown exceptions in the row
 	 * are stored in the returned ExcelUtilStatus and returned after executing the stategy.
 	 *  
-	 * @param fis The FileInputStream containing the excel sheet (.xls, not .xlsx)
+	 * @param is The FileInputStream containing the excel sheet (.xls, not .xlsx)
 	 * @param rowStrategy The method to perform on all the rows except for the header row
 	 * @return an ExcelUtilStatus containing info about the executed rows
 	 * @throws IOException when there's a problem with the excel sheet file
@@ -70,12 +70,12 @@ public class ExcelUtil {
 				}
 			}
 		} catch(Exception e) {
+			Logger.warn(ExcelUtil.class, "Can't read Excel file, trying csv format: " + e.getMessage());
 			bis.reset();
 			//TODO: catch the exceptions from the workbookfactory: IllegalArgumentException + IllegalFormatException
-			Logger.warn(ExcelUtil.class, "Can't read Excel file, trying csv format: " + e.getMessage());
 			ICsvMapReader inFile = new CsvMapReader(new InputStreamReader(bis), CsvPreference.EXCEL_PREFERENCE);
 			try {
-				final String[] header = inFile.getCSVHeader(true);
+				final String[] header = inFile.getHeader(true);
 				Map<String, String> stringMap;
 				while((stringMap = inFile.read(header)) != null) {
 					Map<String, Object> row = getStringMapAsMap(stringMap); 
@@ -89,11 +89,7 @@ public class ExcelUtil {
 			} catch (IOException ioe) {
 				Logger.error(ExcelUtil.class, "Can't read excel file as CSV", ioe);
 				Logger.error(ExcelUtil.class, "Original WorkbookFactory excel reader error:", e);
-			} finally {      
-				inFile.close();
 			}			
-		} finally {
-			bis.close();
 		}
 		
 		status.setFinished();

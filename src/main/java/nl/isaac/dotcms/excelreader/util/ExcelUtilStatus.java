@@ -11,8 +11,8 @@ package nl.isaac.dotcms.excelreader.util;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import com.dotcms.repackage.org.codehaus.jettison.json.JSONException;
+import com.dotcms.repackage.org.codehaus.jettison.json.JSONObject;
 
 /**
  * The ExcelUtilStatus can be used to store import status messages

@@ -8,6 +8,8 @@ package nl.isaac.dotcms.excelreader.viewtool;
 * @copyright Copyright (c) 2011 ISAAC Software Solutions B.V. (http://www.isaac.nl)
 */
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,18 +19,24 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nl.isaac.dotcms.excelreader.osgi.Activator;
 import nl.isaac.dotcms.excelreader.shared.RequestUtil;
+import nl.isaac.dotcms.excelreader.util.DefaultRowStrategy;
 import nl.isaac.dotcms.excelreader.util.ExcelReaderCacheGroupHandler;
 import nl.isaac.dotcms.excelreader.util.ExcelReaderDotCMSFileKey;
 import nl.isaac.dotcms.excelreader.util.ExcelReaderFileKey;
+import nl.isaac.dotcms.excelreader.util.ExcelUtil;
+import nl.isaac.dotcms.excelreader.util.ExcelUtilStatus;
 
 import org.apache.velocity.tools.view.context.ViewContext;
 import org.apache.velocity.tools.view.tools.ViewTool;
 
+import com.dotcms.repackage.org.osgi.framework.FrameworkUtil;
 import com.dotmarketing.beans.Host;
 import com.dotmarketing.business.web.WebAPILocator;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.exception.DotSecurityException;
+import com.dotmarketing.util.Logger;
 import com.liferay.portal.PortalException;
 import com.liferay.portal.SystemException;
 /**
@@ -82,6 +90,19 @@ public class ExcelReaderTool implements ViewTool {
 	 */
 	public void sort(List<Map<String, Object>> sheet, String key) {
 		Collections.sort(sheet, new FieldComparator(key));
+	}
+	
+	public List<Map<String, Object>> readTestExcel(String testFileName) {
+		DefaultRowStrategy strategy = new DefaultRowStrategy(true);
+		ExcelUtilStatus status = new ExcelUtilStatus();
+		try (InputStream is = FrameworkUtil.getBundle(Activator.class).getResource("ext/test/" + testFileName).openStream()) {
+			ExcelUtil.executeStrategyOnExcelSheet(is, strategy, status);
+			return strategy.getData();
+		} catch (IOException e) {
+			Logger.warn(this, "Exception while reading test excel file " + testFileName, e);
+		}
+		
+		return null;
 	}
 	
 	private class FieldComparator implements Comparator<Map<String, Object>> {
