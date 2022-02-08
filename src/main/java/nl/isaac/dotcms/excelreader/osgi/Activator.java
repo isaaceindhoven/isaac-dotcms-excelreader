@@ -1,24 +1,16 @@
 package nl.isaac.dotcms.excelreader.osgi;
 
 import nl.isaac.dotcms.excelreader.viewtool.ExcelReaderTool;
-import nl.isaac.dotcms.util.osgi.ExtendedGenericBundleActivator;
-import nl.isaac.dotcms.util.osgi.ViewToolScope;
 
-import com.dotcms.repackage.org.osgi.framework.BundleContext;
+import nl.isaac.dotcms.shared.osgi.ViewToolScope;
+import org.osgi.framework.BundleContext;
+import nl.isaac.dotcms.shared.osgi.ExtendedGenericBundleActivator;
 
 public class Activator extends ExtendedGenericBundleActivator {
 
 	@Override
-	public void start(BundleContext context) throws Exception {
-		// Default DotCMS call
-		initializeServices(context);
-		
+	public void init(BundleContext context) {
 		addViewTool(context, ExcelReaderTool.class, "excel", ViewToolScope.REQUEST);
-	}
-
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		unregisterServices(context);
 	}
 
 }

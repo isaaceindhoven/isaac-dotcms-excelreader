@@ -19,16 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.WorkbookUtil;
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.io.ICsvMapReader;
 import org.supercsv.prefs.CsvPreference;
 
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.Cell;
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.DateUtil;
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.Row;
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.Sheet;
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.Workbook;
-import com.dotcms.repackage.org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.dotmarketing.util.Logger;
 
 public class ExcelUtil {
@@ -50,7 +47,7 @@ public class ExcelUtil {
 		bis.mark(32);
 		Map<String, Integer> headerMapping = new HashMap<String, Integer>();
 		try {
-			Workbook workbook = WorkbookFactory.create(bis);
+			Workbook workbook = new HSSFWorkbook(bis);
 			Sheet sheet = workbook.getSheetAt(0);
 			status.setTotalNumberOfRows(sheet.getLastRowNum());
 			Iterator<Row> rowIterator = sheet.rowIterator();
@@ -121,10 +118,10 @@ public class ExcelUtil {
 		while (cellIterator.hasNext()) {
 			Cell cell = cellIterator.next();
 			switch(cell.getCellType()) {
-				case Cell.CELL_TYPE_BLANK: 		content.add(null); break;
-				case Cell.CELL_TYPE_BOOLEAN:	content.add(Boolean.valueOf(cell.getBooleanCellValue())); break;
-				case Cell.CELL_TYPE_NUMERIC:	if(DateUtil.isCellDateFormatted(cell)) {content.add(cell.getDateCellValue());} else {content.add(Double.valueOf(cell.getNumericCellValue()));}; break;
-				default:							content.add(cell.getStringCellValue()); 
+				case BLANK: 		content.add(null); break;
+				case BOOLEAN:		content.add(Boolean.valueOf(cell.getBooleanCellValue())); break;
+				case NUMERIC:		if(DateUtil.isCellDateFormatted(cell)) {content.add(cell.getDateCellValue());} else {content.add(Double.valueOf(cell.getNumericCellValue()));}; break;
+				default:							content.add(cell.getStringCellValue());
 			}
 		}
 

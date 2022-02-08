@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.isaac.dotcms.plugin.excelreader</groupId>
 	<artifactId>isaac-dotcms-excelreader</artifactId>
-	<version>3.5.0</version>
+	<version>5.3.8.5-1</version>
 	<packaging>bundle</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -41,132 +41,157 @@
 		</repository>
 	</repositories>
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.7.0</version>
+					<configuration>
+						<source>1.8</source>
+						<target>1.8</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.5.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>5.1.1</version>
 				<extensions>true</extensions>
-				<configuration>
-					<instructions>
-						<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
-						<Bundle-Name>${project.artifactId}</Bundle-Name>
-						<Bundle-Version>${project.version}</Bundle-Version>
-						<Bundle-Activator>nl.isaac.dotcms.excelreader.osgi.Activator</Bundle-Activator>
-						<Import-Package />
-						<DynamicImport-Package>*</DynamicImport-Package>
-						<Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
-						<Embed-Transitive>true</Embed-Transitive>
-						<Data-Files>conf,ext</Data-Files>
-					</instructions>
-				</configuration>
+				<executions>
+					<execution>
+						<id>create-osgi-plugin</id>
+						<goals>
+							<goal>bundle</goal>
+						</goals>
+						<configuration>
+							<instructions>
+								<Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+								<Bundle-Name>${project.artifactId}</Bundle-Name>
+								<Bundle-Version>${project.version}</Bundle-Version>
+								<Bundle-Activator>nl.isaac.dotcms.excelreader.osgi.Activator</Bundle-Activator>
+								<Import-Package>org.osgi.framework,
+									com.dotmarketing.osgi,
+									com.dotmarketing.beans,
+									com.liferay.portal
+								</Import-Package>
+								<DynamicImport-Package>*</DynamicImport-Package>
+								<Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
+								<Embed-Transitive>true</Embed-Transitive>
+								<Data-Files>conf,ext</Data-Files>
+							</instructions>
+						</configuration>
+					</execution>
+					<execution>
+						<id>fragment-manifest</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>manifest</goal>
+						</goals>
+						<configuration>
+							<instructions>
+								<Bundle-SymbolicName>${project.groupId}.${project.artifactId}.fragment</Bundle-SymbolicName>
+								<Bundle-Name>${project.artifactId}.fragment</Bundle-Name>
+								<Bundle-Version>${project.version}</Bundle-Version>
+								<Export-Package>
+									com.dotmarketing.osgi,
+									org.apache.velocity.tools.view,
+									org.apache.velocity.tools.view.servlet,
+									org.apache.velocity.tools.view.tools,
+									org.osgi.framework,
+									org.apache.logging.log4j,
+									org.apache.logging.log4j.core,
+									org.apache.logging.log4j.spi
+								</Export-Package>
+								<Import-Package />
+								<Private-Package />
+								<Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
+							</instructions>
+							<manifestLocation>${project.build.directory}/fragment/META-INF</manifestLocation>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
-		</plugins>
-	</build>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>create-fragment-plugin</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<classesDirectory>${project.build.directory}/fragment</classesDirectory>
+							<finalName>${project.artifactId}-${project.version}</finalName>
+							<classifier>fragment</classifier>
+							<archive>
+								<manifestFile>${project.build.directory}/fragment/META-INF/MANIFEST.MF</manifestFile>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>	</build>
 	<dependencies>
+		<dependency>
+			<groupId>nl.isaac.dotcms.shared</groupId>
+			<artifactId>isaac-dotcms-shared-utils</artifactId>
+			<version>2.15</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.dotcms</groupId>
 			<artifactId>dotcms</artifactId>
-			<version>3.5</version>
+			<version>5.3.8.5</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
+					<groupId>org.mockito</groupId>
+					<artifactId>mockito-core</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.commons-io</artifactId>
-			<version>2.0.1_1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<version>1.8.6</version>
-			<artifactId>quartz</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.felix</artifactId>
-			<version>4.2.1_1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-			<version>3.1.0.RELEASE</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.org.apache.felix.http.bundle</artifactId>
-			<version>2.2.0_1</version>
-			<scope>provided</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
+			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.commons-lang</artifactId>
-			<version>2.4_1</version>
-			<scope>provided</scope>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.5</version>
 		</dependency>
+
 		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.tika-app</artifactId>
-			<version>1.3_1</version>
-			<scope>provided</scope>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.7</version>
 		</dependency>
+
 		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.portlet</artifactId>
-			<version>1.0_1</version>
-			<scope>provided</scope>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.9</version>
 		</dependency>
-		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.jettison</artifactId>
-			<version>1.1_1</version>
-			<scope>provided</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>net.sf.supercsv</groupId>
 			<artifactId>super-csv</artifactId>
-			<version>2.3.1</version>
+			<version>2.4.0</version>
 		</dependency>
+
 		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.log4j-api</artifactId>
-			<version>2.3_1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.dotcms.lib</groupId>
-			<artifactId>dot.log4j-core</artifactId>
-			<version>2.3_1</version>
-			<scope>provided</scope>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.1.0</version>
 		</dependency>
 	</dependencies>
 </project>

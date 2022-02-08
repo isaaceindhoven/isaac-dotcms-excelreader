@@ -8,11 +8,10 @@ package nl.isaac.dotcms.excelreader.util;
 * @copyright Copyright (c) 2011 ISAAC Software Solutions B.V. (http://www.isaac.nl)
 */
 
+import com.google.gson.JsonObject;
+
 import java.util.Map;
 import java.util.TreeMap;
-
-import com.dotcms.repackage.org.codehaus.jettison.json.JSONException;
-import com.dotcms.repackage.org.codehaus.jettison.json.JSONObject;
 
 /**
  * The ExcelUtilStatus can be used to store import status messages
@@ -66,12 +65,12 @@ public class ExcelUtilStatus {
 		return finished;
 	}
 	
-	public JSONObject toJSON() throws JSONException {
-		JSONObject status = new JSONObject();
-		status.put("currentRowNumber", Integer.valueOf(currentRowNumber));
-		status.put("totalNumberOfRows", Integer.valueOf(totalNumberOfRows));
-		status.put("numberOfImportedRows", Integer.valueOf(numberOfImportedRows));
-		status.put("finished", Boolean.valueOf(finished));
+	public JsonObject toJSON() {
+		JsonObject status = new JsonObject();
+		status.addProperty("currentRowNumber", Integer.valueOf(currentRowNumber));
+		status.addProperty("totalNumberOfRows", Integer.valueOf(totalNumberOfRows));
+		status.addProperty("numberOfImportedRows", Integer.valueOf(numberOfImportedRows));
+		status.addProperty("finished", Boolean.valueOf(finished));
 		return status;
 	}
 	

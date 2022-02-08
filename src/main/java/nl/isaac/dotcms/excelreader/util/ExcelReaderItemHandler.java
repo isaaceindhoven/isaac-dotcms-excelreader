@@ -71,7 +71,7 @@ public class ExcelReaderItemHandler implements ItemHandler<ExcelReaderFileKey, L
 				//get from dotCMS
 				ExcelReaderDotCMSFileKey dotcmsKey = (ExcelReaderDotCMSFileKey)key;
 				dotcmsFile = FileTools.getFileAssetByURI(dotcmsKey.getPath(), dotcmsKey.getHost(), dotcmsKey.isLive());
-				is = dotcmsFile.getFileInputStream();
+				is = dotcmsFile.getInputStream();
 			} else {
 				//get from the file system
 				file = new File(key.getPath());

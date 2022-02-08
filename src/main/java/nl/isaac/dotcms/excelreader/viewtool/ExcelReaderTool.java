@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import nl.isaac.dotcms.excelreader.osgi.Activator;
-import nl.isaac.dotcms.excelreader.shared.RequestUtil;
 import nl.isaac.dotcms.excelreader.util.DefaultRowStrategy;
 import nl.isaac.dotcms.excelreader.util.ExcelReaderCacheGroupHandler;
 import nl.isaac.dotcms.excelreader.util.ExcelReaderDotCMSFileKey;
@@ -31,7 +30,7 @@ import nl.isaac.dotcms.excelreader.util.ExcelUtilStatus;
 import org.apache.velocity.tools.view.context.ViewContext;
 import org.apache.velocity.tools.view.tools.ViewTool;
 
-import com.dotcms.repackage.org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.FrameworkUtil;
 import com.dotmarketing.beans.Host;
 import com.dotmarketing.business.web.WebAPILocator;
 import com.dotmarketing.exception.DotDataException;
@@ -39,6 +38,7 @@ import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.util.Logger;
 import com.liferay.portal.PortalException;
 import com.liferay.portal.SystemException;
+import nl.isaac.dotcms.shared.request.DotCMSRequestUtil;
 /**
  * A ViewTool to get the information out of Excel files
  * 
@@ -143,7 +143,7 @@ public class ExcelReaderTool implements ViewTool {
 	}
 	
 	public boolean isLive() {
-		return RequestUtil.isLiveMode(request);
+		return new DotCMSRequestUtil(request).isLiveMode();
 	}
 	
 }
